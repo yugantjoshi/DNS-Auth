@@ -8,20 +8,10 @@ def open_files():
     fHostnames = open(dns_table, "r")
     return fHostnames.readlines()
 
-
-def get_key(line):
+# Given line and index return either key, challenge, hostname
+def get_piece(line, arg):
     split_entry = line.split(" ")
-    return split_entry[0].strip("\n").strip("\r").strip()
-
-
-def get_challenge(line):
-    split_entry = line.split(" ")
-    return split_entry[1].strip("\n").strip("\r").strip()
-
-
-def get_hostname(line):
-    split_entry = line.split(" ")
-    return split_entry[2].strip("\n").strip("\r").strip()
+    return split_entry[arg].strip("\n").strip("\r").strip()
 
 
 def run():
@@ -41,9 +31,9 @@ def run():
 
     for line in fHostnamesList:
         # parse key, challenge, hostname
-        line_key = get_key(line)
-        line_challenge = get_challenge(line)
-        line_hostname = get_hostname(line)
+        line_key = get_piece(line, 0)
+        line_challenge = get_piece(line, 1)
+        line_hostname = get_piece(line, 2)
         # create digest
         digest = hmac.new(line_key.encode(), line_challenge.encode('utf-8'))
         # send to AS
