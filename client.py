@@ -2,11 +2,11 @@ import socket as mysoc
 import sys
 import hmac
 
-
 def open_files():
     dns_table = sys.argv[2]
     fHostnames = open(dns_table, "r")
     return fHostnames.readlines()
+
 
 # Given line and index return either key, challenge, hostname
 def get_piece(line, arg):
@@ -37,21 +37,20 @@ def run():
         # create digest
         digest = hmac.new(line_key.encode(), line_challenge.encode('utf-8'))
         # send to AS
-        as_socket.send(digest)
-        print("[C:] Sending to AS %s" % digest)
+        as_socket.send(line_challenge+" "+digest)
+        print("[C:] Sending to AS %s" % line_challenge+ " " + digest)
 
         # receive from AS
         as_data = as_socket.recv(100).strip()
-        print("[C:] Received from AS %s" % as_data)
-        fOut.write("%s\n" % as_data)
+        if as_data == 1:
+            # connect to tlds1
+            pass
+        if as_data == 2:
+            # connect to tlds2
+            pass
+
     as_socket.close()
     exit()
 
 
 run()
-
-
-
-
-
-
