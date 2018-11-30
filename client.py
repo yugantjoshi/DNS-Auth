@@ -1,8 +1,9 @@
 import socket as mysoc
 import sys
 import hmac
+import pickle
 
-
+#TODO: Figure out how to send hmac over socket
 #Run on whatever
 #python ./client.py java.cs.rutgers.edu PROJ3-HNS.txt
 
@@ -27,7 +28,7 @@ def run():
 
     as_host_name = sys.argv[1]
     as_addr = mysoc.gethostbyname(as_host_name)
-    as_port = 80000
+    as_port = 50000
     as_server_binding = (as_addr, as_port)
     as_socket.connect(as_server_binding)
     fOut = open("RESOLVED.txt", "w+")
@@ -41,7 +42,8 @@ def run():
         # create digest
         digest = hmac.new(line_key.encode(), line_challenge.encode('utf-8'))
         # send to AS
-        as_socket.send(line_challenge+" "+digest)
+        as_socket.send(line_challenge)
+        as_socket.send(pickle.dumps(digest))
         print("[C:] Sending to AS %s" % line_challenge+ " " + digest)
 
         # receive from AS
@@ -52,7 +54,11 @@ def run():
             except mysoc.error as err:
                 print('{}\n'.format("tld socket open error %s" % err))
 
-            tld_socket.connect(as_data, 80001)
+            tld_socket.connect(as_data, 50001)
+            tld_socket.send(line_hostname)
+            tld_data = tld_socket.recv(100).strip()
+            fOut.write("%s\n" % tld_data)
+
 
     as_socket.close()
     exit()

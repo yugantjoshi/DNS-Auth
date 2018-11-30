@@ -1,13 +1,15 @@
 import sys
 import socket as mysoc
 import hmac
+import pickle
 
-#RUN ON null.cs.rutgers.edu
+#TODO: Figure out how to send hmac over socket
+#RUN ON grep.cs.rutgers.edu
 #python ./TLD2.py PROJ3-KEY2.txt PROJ3-TLDS2.txt
 
 def RSserver():
 
-    fDNSRSnames = open("PROJ1-DNSRS.txt", "r")
+    fDNSRSnames = open(sys.argv[2], "r")
     fDNSRSList = fDNSRSnames.readlines()
     inputEntries = []
     for entry in fDNSRSList:
@@ -18,7 +20,7 @@ def RSserver():
     except mysoc.error as err:
         print('{}\n'.format("AS socket open error",err))
 
-    as_server_binding=('', 70002)
+    as_server_binding=('', 60002)
     as_socket.bind(as_server_binding)
     as_socket.listen(1)
     hostname = mysoc.gethostname()
@@ -28,7 +30,7 @@ def RSserver():
     while True:
         challenge = as_socket.recv(100)
         digest = hmac.new(key.encode(),challenge.encode("utf-8"))
-        as_socket.send(digest)
+        as_socket.send(pickle.dumps(digest))
 
 
         try:
@@ -36,7 +38,7 @@ def RSserver():
         except mysoc.error as err:
             print('{}\n'.format("client socket open error",err))
 
-        client_socket.bind('', 80001)
+        client_socket.bind('', 50001)
         client_socket.listen(1)
         client_socket.accept()
 
