@@ -2,6 +2,8 @@ import socket as mysoc
 import sys
 import hmac
 
+#Run on java.cs.rutgers.edu
+#python ./ASserver.py grep.cs.rutgers.edu null.cs.rutgers.edu
 
 def get_digest(line):
     line.strip()
@@ -17,13 +19,15 @@ def get_challenge(line):
 
 def auth_digest(digest, tlds1_digest, tlds2_digest):
     if digest == tlds1_digest:
-        return 1
+        return HN1
     if digest == tlds2_digest
-        return 2
-
+        return HN2
 
 
 def run():
+
+    HN1 = sys.argv[1]
+    HN2 = sys.argv[2]
 
     #init Client Socket
     try:
@@ -32,7 +36,7 @@ def run():
         print('{}\n'.format("Client socket open error %s" % err))
 
     #as_server_binding = ('', 51237) DONT think we need this lol
-    client_socket.bind('',51237)
+    client_socket.bind('',80000)
     client_socket.listen(1)
     client_socket.accept()
     print("accepted client")
@@ -43,10 +47,8 @@ def run():
     except mysoc.error as err:
         print('{}\n'.format("Client socket open error %s" % err))
 
-    tlds1_socket.bind('',51238)
-    tlds1_socket.listen(1)
-    tlds1_socket.accept()
-    print("accepted TLDS1")
+    tlds1_socket.connect(HN1,70001)
+    print("Connected TLDS1")
 
     #init TLDS2 socket
     try:
@@ -54,10 +56,8 @@ def run():
     except mysoc.error as err:
         print('{}\n'.format("Client socket open error %s" % err))
 
-    tlds2_socket.bind('',51238)
-    tlds2_socket.listen(1)
-    tlds2_socket.accept()
-    print("accepted TLDS2")
+    tlds2_socket.connect(HN2,70002)
+    print("Connected TLDS2")
 
     while True:
         client_challenge_digest = client_socket.recv(100)

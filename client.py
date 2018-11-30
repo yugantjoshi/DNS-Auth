@@ -2,6 +2,10 @@ import socket as mysoc
 import sys
 import hmac
 
+
+#Run on whatever
+#python ./client.py java.cs.rutgers.edu PROJ3-HNS.txt
+
 def open_files():
     dns_table = sys.argv[2]
     fHostnames = open(dns_table, "r")
@@ -23,7 +27,7 @@ def run():
 
     as_host_name = sys.argv[1]
     as_addr = mysoc.gethostbyname(as_host_name)
-    as_port = 51237
+    as_port = 80000
     as_server_binding = (as_addr, as_port)
     as_socket.connect(as_server_binding)
     fOut = open("RESOLVED.txt", "w+")
@@ -42,12 +46,13 @@ def run():
 
         # receive from AS
         as_data = as_socket.recv(100).strip()
-        if as_data == 1:
-            # connect to tlds1
-            pass
-        if as_data == 2:
-            # connect to tlds2
-            pass
+        if as_data:
+            try:
+                tld_socket = mysoc.socket(mysoc.AF_INET, mysoc.SOCK_STREAM)
+            except mysoc.error as err:
+                print('{}\n'.format("tld socket open error %s" % err))
+
+            tld_socket.connect(as_data, 80001)
 
     as_socket.close()
     exit()
