@@ -3,9 +3,6 @@ import sys
 import hmac
 import pickle
 
-#TODO: Figure out how to send hmac over socket
-#Run on whatever
-#python ./client.py java.cs.rutgers.edu PROJ3-HNS.txt
 
 def open_files():
     dns_table = sys.argv[2]
@@ -26,8 +23,7 @@ def run():
     except mysoc.error as err:
         print('{}\n'.format("AS socket open error %s" % err))
 
-    as_host_name = sys.argv[1]
-    as_addr = mysoc.gethostbyname(as_host_name)
+    as_addr = mysoc.gethostbyname(mysoc.gethostname())
     as_port = 50000
     as_server_binding = (as_addr, as_port)
     as_socket.connect(as_server_binding)
@@ -42,9 +38,8 @@ def run():
         # create digest
         digest = hmac.new(line_key.encode(), line_challenge.encode('utf-8'))
         # send to AS
-        as_socket.send(line_challenge)
         as_socket.send(pickle.dumps(digest))
-        print("[C:] Sending to AS %s" % line_challenge+ " " + digest)
+        print("[C:] Sending to AS %s" % line_challenge + " " + digest)
 
         # receive from AS
         as_data = as_socket.recv(100).strip()
@@ -59,9 +54,7 @@ def run():
             tld_data = tld_socket.recv(100).strip()
             fOut.write("%s\n" % tld_data)
 
-
     as_socket.close()
     exit()
-
 
 run()
