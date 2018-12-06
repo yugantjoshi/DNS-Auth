@@ -1,11 +1,11 @@
 import socket as mysoc
 import sys
 import hmac
-import pickle
+import cPickle as pickle
 
 
 def open_files():
-    dns_table = sys.argv[2]
+    dns_table = sys.argv[1]
     fHostnames = open(dns_table, "r")
     return fHostnames.readlines()
 
@@ -23,7 +23,7 @@ def run():
     except mysoc.error as err:
         print('{}\n'.format("AS socket open error %s" % err))
 
-    as_addr = mysoc.gethostbyname(mysoc.gethostname())
+    as_addr = mysoc.gethostname()
     as_port = 50000
     as_server_binding = (as_addr, as_port)
     as_socket.connect(as_server_binding)
@@ -37,22 +37,12 @@ def run():
         line_hostname = get_piece(line, 2)
         # create digest
         digest = hmac.new(line_key.encode(), line_challenge.encode('utf-8'))
+        digest_string = digest.digest()
         # send to AS
-        as_socket.send(pickle.dumps(digest))
-        print("[C:] Sending to AS %s" % line_challenge + " " + digest)
-
-        # receive from AS
-        as_data = as_socket.recv(100).strip()
-        if as_data:
-            try:
-                tld_socket = mysoc.socket(mysoc.AF_INET, mysoc.SOCK_STREAM)
-            except mysoc.error as err:
-                print('{}\n'.format("tld socket open error %s" % err))
-
-            tld_socket.connect(as_data, 50001)
-            tld_socket.send(line_hostname)
-            tld_data = tld_socket.recv(100).strip()
-            fOut.write("%s\n" % tld_data)
+        # challenge_digest_array = [line_challenge, digest]
+        # client_data = pickle.dumps(challenge_digest_array)
+        as_socket.send(digest_string)
+        print("[C:] Sending to AS %" % digest_string)
 
     as_socket.close()
     exit()
