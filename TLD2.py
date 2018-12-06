@@ -4,12 +4,10 @@ import hmac
 import pickle
 
 #TODO: Figure out how to send hmac over socket
-#RUN ON grep.cs.rutgers.edu
-#python ./TLD2.py PROJ3-KEY2.txt PROJ3-TLDS2.txt
 
 def RSserver():
 
-    fDNSRSnames = open(sys.argv[2], "r")
+    fDNSRSnames = open("PROJ3-TLDS1.txt", "r")
     fDNSRSList = fDNSRSnames.readlines()
     inputEntries = []
     for entry in fDNSRSList:
@@ -25,12 +23,14 @@ def RSserver():
     as_socket.listen(1)
     hostname = mysoc.gethostname()
     as_host_ip = (mysoc.gethostbyname(hostname))
-    csockid,addr=as_socket.accept()
+    as_sockid, addr = as_socket.accept()
 
     while True:
-        challenge = as_socket.recv(100)
-        digest = hmac.new(key.encode(),challenge.encode("utf-8"))
-        as_socket.send(pickle.dumps(digest))
+        keyfile = open("PROJ3-KEY2.txt", "r")
+        key = keyfile.readline(100).strip("\n")
+        challenge = as_sockid.recv(100)
+        digest = hmac.new(key.encode(), challenge.encode("utf-8"))
+        as_sockid.send(digest.digest())
 
 
         try:
@@ -38,11 +38,12 @@ def RSserver():
         except mysoc.error as err:
             print('{}\n'.format("client socket open error",err))
 
-        client_socket.bind('', 50001)
+        client_socket_binding = ('', 50001)
+        client_socket.bind(client_socket_binding)
         client_socket.listen(1)
-        client_socket.accept()
+        csockid, caddr = client_socket.accept()
 
-        client_data = client_socket.recv(100)
+        client_data = csockid.recv(100)
         foundEntry = False
         if not client_data:
             break
@@ -61,13 +62,13 @@ def RSserver():
             if entryHostname == client_data:
                 foundEntry = True
                 print("[TLDS1:] Sending: %s" % entry)
-                client_socket.send(entry)
+                csockid.send(entry)
                 client_socket.close()
                 break
             if flag == 'NS':
-                if foundEntry == False:
+                if  not foundEntry:
                     print("[TLDS1:] Sending NS")
-                    client_socket.send(entry)
+                    csockid.send(entry)
                     client_socket.close()
 
     as_socket.close()

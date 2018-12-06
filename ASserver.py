@@ -6,15 +6,13 @@ import pickle
 
 def auth_digest(digest, tlds1_digest, tlds2_digest):
     if hmac.compare_digest(digest, tlds1_digest):
-        pass
+        return "cpp.cs.rutgers.edu"
     if hmac.compare_digest(digest, tlds2_digest):
-        pass
+        return "java.cs.rutgers.edu"
 
 
 def run():
 
-    tld1_addr = "cpp.cs.rutgers.edu"
-    tld2_addr = "java.cs.rutgers.edu"
 
     #init Client Socket
     try:
@@ -27,11 +25,47 @@ def run():
     client_server_binding = (client_addr, client_port)
     client_socket.bind(client_server_binding)
     client_socket.listen(1)
-    client_socket.accept()
+    csockid, addr = client_socket.accept()
     print("accepted client")
 
-    client_data = client_socket.recv(100)
-    client_data.encode('utf-8')
-    print(client_data)
+    # init TLDS1 socket
+    try:
+        tlds1_socket = mysoc.socket(mysoc.AF_INET, mysoc.SOCK_STREAM)
+    except mysoc.error as err:
+        print('{}\n'.format("Client socket open error %s" % err))
+
+    tld1_addr = mysoc.gethostbyname("cpp.cs.rutgers.edu")
+    tlds1_socket_binding = (tld1_addr, 60001)
+    tlds1_socket.connect(tlds1_socket_binding)
+    print("Connected TLDS1")
+
+    # init TLDS2 socket
+    try:
+        tlds2_socket = mysoc.socket(mysoc.AF_INET, mysoc.SOCK_STREAM)
+    except mysoc.error as err:
+        print('{}\n'.format("Client socket open error %s" % err))
+
+    tld2_addr = mysoc.gethostbyname("java.cs.rutgers.edu")
+    tlds2_socket_binding = (tld2_addr, 60002)
+    tlds2_socket.connect(tlds2_socket_binding)
+    print("Connected TLDS2")
+
+    while True:
+        challenge_digest_arr = csockid.recv(100)
+        challenge_digest_arr = pickle.loads(challenge_digest_arr)
+        print("Received challenge and digest from client")
+        challenge = challenge_digest_arr[0]
+        digest = challenge_digest_arr[1]
+
+        tlds1_socket.send(challenge)
+        tlds2_socket.send(challenge)
+
+        tlds1_response = tlds1_socket.recv(100)
+        tlds2_response = tlds2_socket.recv(100)
+
+        tld_server = auth_digest(digest, tlds1_response, tlds2_response)
+        csockid.send(tld_server)
+        print("Sent TLD server to client: %s" %tld_server)
+
 
 run()
