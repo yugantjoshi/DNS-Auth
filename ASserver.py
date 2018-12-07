@@ -58,10 +58,14 @@ def run():
         digest = challenge_digest_arr[1]
 
         tlds1_socket.send(challenge)
+        print("tld1 sent")
         tlds2_socket.send(challenge)
+        print("tld2 sent")
 
         tlds1_response = tlds1_socket.recv(100)
+        print("tld1 responded")
         tlds2_response = tlds2_socket.recv(100)
+        print("tld2 responded")
 
         tld_server = auth_digest(digest, tlds1_response, tlds2_response)
         csockid.send(tld_server)

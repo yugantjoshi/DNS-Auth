@@ -30,6 +30,9 @@ def run():
     fOut = open("RESOLVED.txt", "w+")
     fHostnamesList = open_files()
 
+    tld1Con = False
+    tld2con = False
+
     for line in fHostnamesList:
         # parse key, challenge, hostname
         line_key = get_piece(line, 0)
@@ -45,21 +48,38 @@ def run():
         as_socket.send(pickle.dumps(challenge_digest_array))
         tld_server = as_socket.recv(100)
         print("Recieved TLD Server from AS: %s" % tld_server)
-        if tld_server:
-            try:
-                tld_socket = mysoc.socket(mysoc.AF_INET, mysoc.SOCK_STREAM)
-            except mysoc.error as err:
-                print('{}\n'.format("tld socket open error %s" % err))
+        if tld_server == "cpp.cs.rutgers.edu":
+            if not tld1Con:
+                try:
+                    tld1_socket = mysoc.socket(mysoc.AF_INET, mysoc.SOCK_STREAM)
+                except mysoc.error as err:
+                    print('{}\n'.format("tld socket open error %s" % err))
 
-            tld_server_binding = (mysoc.gethostbyname(tld_server), 50001)
-            tld_socket.connect(tld_server_binding)
-            tld_socket.send(line_hostname)
-            tld_data = tld_socket.recv(100).strip()
-            print("Writing Data %s" %tld_data)
-            fOut.write("%s\n" % tld_data)
-            tld_socket.close()
+                tld_server_binding = (mysoc.gethostbyname(tld_server), 50001)
+                tld1_socket.connect(tld_server_binding)
+                tld1Con = True
+            tld1_socket.send(line_hostname)
+            tld1_data = tld1_socket.recv(100).strip()
+            print("Writing Data %s" %tld1_data)
+            fOut.write("%s\n" % tld1_data)
+        elif tld_server == "java.cs.rutgers.edu":
+            if not tld2con:
+                try:
+                    tld2_socket = mysoc.socket(mysoc.AF_INET, mysoc.SOCK_STREAM)
+                except mysoc.error as err:
+                    print('{}\n'.format("tld socket open error %s" % err))
+
+                tld2_server_binding = (mysoc.gethostbyname(tld_server), 50002)
+                tld2_socket.connect(tld2_server_binding)
+                tld2con = True
+            tld2_socket.send(line_hostname)
+            tld2_data = tld2_socket.recv(100).strip()
+            print("Writing Data %s" %tld2_data)
+            fOut.write("%s\n" % tld2_data)
 
     as_socket.close()
+    tld1_socket.close()
+    tld2_socket.close()
     exit()
 
 run()
