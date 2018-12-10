@@ -1,14 +1,14 @@
 import socket as mysoc
 import sys
 import hmac
-import pickle
+import cPickle as pickle
 
 
 def auth_digest(digest, tlds1_digest, tlds2_digest):
     if hmac.compare_digest(digest, tlds1_digest):
-        return "cpp.cs.rutgers.edu"
+        return ["1","cpp.cs.rutgers.edu"]
     if hmac.compare_digest(digest, tlds2_digest):
-        return "java.cs.rutgers.edu"
+        return ["2","java.cs.rutgers.edu"]
 
 
 def run():
@@ -51,8 +51,8 @@ def run():
     print("Connected TLDS2")
 
     while True:
-        challenge_digest_arr = csockid.recv(100)
-        challenge_digest_arr = pickle.loads(challenge_digest_arr)
+        challenge_digest = csockid.recv(100)
+        challenge_digest_arr = pickle.loads(challenge_digest)
         print("Received challenge and digest from client")
         challenge = challenge_digest_arr[0]
         digest = challenge_digest_arr[1]
@@ -68,8 +68,14 @@ def run():
         print("tld2 responded")
 
         tld_server = auth_digest(digest, tlds1_response, tlds2_response)
-        csockid.send(tld_server)
-        print("Sent TLD server to client: %s" %tld_server)
+        if tld_server[0] == "1":
+            tlds1_socket.send("True")
+            tlds2_socket.send("False")
+        else:
+            tlds1_socket.send("False")
+            tlds2_socket.send("True")
+        csockid.send(tld_server[1])
+        print("Sent TLD server to client: %s" %tld_server[1])
 
 
 run()

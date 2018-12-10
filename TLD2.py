@@ -5,12 +5,11 @@ import pickle
 
 #TODO: Figure out how to send hmac over socket
 
-def RSserver():
-
-    fDNSRSnames = open("PROJ3-TLDS2.txt", "r")
-    fDNSRSList = fDNSRSnames.readlines()
+def TLD2server():
+    fDNSTLD2names = open("PROJ3-TLDS2.txt", "r")
+    fDNSTLD2List = fDNSTLD2names.readlines()
     inputEntries = []
-    for entry in fDNSRSList:
+    for entry in fDNSTLD2List:
         inputEntries.append(entry.strip("\n"))
 
     try:
@@ -34,48 +33,46 @@ def RSserver():
         challenge = as_sockid.recv(100)
         digest = hmac.new(key.encode(), challenge.encode("utf-8"))
         as_sockid.send(digest.digest())
-        print("did this^^")
+        results  = as_sockid.recv(100)
 
-        if not client_con:
-            try:
-                client_socket=mysoc.socket(mysoc.AF_INET, mysoc.SOCK_STREAM)
-            except mysoc.error as err:
-                print('{}\n'.format("client socket open error",err))
+        if results == "True":
+            if not client_con:
+                try:
+                    client_socket=mysoc.socket(mysoc.AF_INET, mysoc.SOCK_STREAM)
+                except mysoc.error as err:
+                    print('{}\n'.format("client socket open error",err))
 
-            client_socket_binding = ('', 50002)
-            client_socket.bind(client_socket_binding)
-            client_socket.listen(1)
-            csockid, caddr = client_socket.accept()
-            client_con = True
+                client_socket_binding = ('', 50002)
+                client_socket.bind(client_socket_binding)
+                client_socket.listen(1)
+                csockid, caddr = client_socket.accept()
+                client_con = True
 
-        client_data = csockid.recv(100)
-        print("client idkkk")
-        if client_data:
-            foundEntry = False
-            client_data = client_data.strip("\n")
-            client_data = client_data.strip("\r")
-            print("[TLDS1:] Recieved: %s" % client_data)
+            client_data = csockid.recv(100)
+            print("client idkkk")
+            if client_data:
+                foundEntry = False
+                client_data = client_data.strip("\n")
+                client_data = client_data.strip("\r")
+                print("[TLDS1:] Recieved: %s" % client_data)
 
-            for entry in inputEntries:
-                splitEntry = entry.split(" ")
-                entryHostname = splitEntry[0].strip("\n")
-                entryHostname = splitEntry[0].strip("\r")
-                entryHostname = splitEntry[0].strip()
-                flag = splitEntry[-1]
-                flag = flag.strip()
+                for entry in inputEntries:
+                    splitEntry = entry.split(" ")
+                    entryHostname = splitEntry[0].strip("\n")
+                    entryHostname = splitEntry[0].strip("\r")
+                    entryHostname = splitEntry[0].strip()
+                    flag = splitEntry[-1]
+                    flag = flag.strip()
 
-                if entryHostname == client_data:
-                    foundEntry = True
-                    print("[TLDS1:] Sending: %s" % entry)
-                    csockid.send(entry)
-                if flag == 'NS':
-                    if  not foundEntry:
-                        print("[TLDS1:] Sending NS")
+                    if entryHostname == client_data:
+                        foundEntry = True
+                        print("[TLDS1:] Sending: %s" % entry)
                         csockid.send(entry)
-        else:
-            continue
+                if not foundEntry:
+                    print("[TLDS1:] Sending error")
+                    csockid.send("error")
     as_socket.close()
     client_socket.close()
     exit()
 
-RSserver()
+TLD2server()

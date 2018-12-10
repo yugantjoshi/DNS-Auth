@@ -59,8 +59,9 @@ def run():
                 tld1_socket.connect(tld_server_binding)
                 tld1Con = True
             tld1_socket.send(line_hostname)
+            print("Sending Data to TLD1 %s" % line_hostname)
             tld1_data = tld1_socket.recv(100).strip()
-            print("Writing Data %s" %tld1_data)
+            print("Received Data from TLD1 %s" %tld1_data)
             fOut.write("%s\n" % tld1_data)
         elif tld_server == "java.cs.rutgers.edu":
             if not tld2con:
@@ -73,8 +74,9 @@ def run():
                 tld2_socket.connect(tld2_server_binding)
                 tld2con = True
             tld2_socket.send(line_hostname)
+            print("Sending Data to TLD2 %s" % line_hostname)
             tld2_data = tld2_socket.recv(100).strip()
-            print("Writing Data %s" %tld2_data)
+            print("Received Data from TLD2 %s" % tld1_data)
             fOut.write("%s\n" % tld2_data)
 
     as_socket.close()
