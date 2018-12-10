@@ -49,7 +49,6 @@ def TLD2server():
                 client_con = True
 
             client_data = csockid.recv(100)
-            print("client idkkk")
             if client_data:
                 foundEntry = False
                 client_data = client_data.strip("\n")
@@ -70,7 +69,7 @@ def TLD2server():
                         csockid.send(entry)
                 if not foundEntry:
                     print("[TLDS1:] Sending error")
-                    csockid.send("error")
+                    csockid.send("%s - Error: HOST NOT FOUND" % client_data)
     as_socket.close()
     client_socket.close()
     exit()

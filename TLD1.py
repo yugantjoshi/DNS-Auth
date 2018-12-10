@@ -71,7 +71,7 @@ def TLD1server():
                         csockid.send(entry)
                 if not foundEntry:
                     print("[TLDS1:] Sending error")
-                    csockid.send("error")
+                    csockid.send("%s - Error: HOST NOT FOUND" % client_data)
     as_socket.close()
     client_socket.close()
     exit()
